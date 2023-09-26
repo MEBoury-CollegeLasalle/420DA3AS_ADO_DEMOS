@@ -16,7 +16,7 @@ internal class Demo1DAO {
     public static readonly string insertQuery = "INSERT INTO {0} (Name, Description) VALUES (@nameParam, @descParam); SELECT CAST(SCOPE_IDENTITY() AS INT);";
     public static readonly string deleteQuery = "DELETE FROM {0} WHERE Id = @idParam;";
 
-    public Demo1DTO GetById(int Id) {
+    public static Demo1DTO GetById(int Id) {
 
         SqlCommand command = DatabaseConnectionService.GetConnection().CreateCommand();
         command.CommandText = String.Format(selectByIdQuery, tableName);
