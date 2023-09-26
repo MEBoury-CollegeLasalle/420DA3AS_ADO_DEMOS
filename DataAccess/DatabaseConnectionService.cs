@@ -12,14 +12,12 @@ public class DatabaseConnectionService {
 
 
     public static SqlConnection GetConnection() {
-        if (CONNECTION == null) {
-            CONNECTION = new SqlConnection(connectionString);
-        }
+        CONNECTION ??= new SqlConnection(connectionString);
         return CONNECTION;
     }
 
     public static void Shutdown() {
-        if (CONNECTION is SqlConnection) {
+        if (CONNECTION is not null) {
             CONNECTION.Close();
         }
     }
