@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace TestPatates.DataAccess;
 internal class Demo1DAO {
@@ -16,20 +18,31 @@ internal class Demo1DAO {
     public static readonly string insertQuery = "INSERT INTO {0} (Name, Description) VALUES (@nameParam, @descParam); SELECT CAST(SCOPE_IDENTITY() AS INT);";
     public static readonly string deleteQuery = "DELETE FROM {0} WHERE Id = @idParam;";
 
+
+
     public Demo1DTO GetById(int Id) {
+        return this.GetById(Id, DatabaseConnectionService.GetConnection().BeginTransaction(), true);
+    }
 
-        SqlCommand command = DatabaseConnectionService.GetConnection().CreateCommand();
-        command.CommandText = String.Format(selectByIdQuery, tableName);
+    public Demo1DTO GetById(int Id, SqlTransaction transaction) {
+        return this.GetById(Id, transaction, false);
+    }
 
-        SqlParameter idParameter = command.CreateParameter();
-        idParameter.ParameterName = "@idParam";
-        idParameter.DbType = DbType.Int32;
-        idParameter.Value = Id;
-        command.Parameters.Add(idParameter);
+    public Demo1DTO GetById(int Id, SqlTransaction transaction, bool doCommit) {
 
-        using (DatabaseConnectionService.GetConnection()) {
-            if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
-                DatabaseConnectionService.GetConnection().Open();
+        try {
+
+            SqlCommand command = transaction.Connection.CreateCommand();
+            command.CommandText = String.Format(selectByIdQuery, tableName);
+
+            SqlParameter idParameter = command.CreateParameter();
+            idParameter.ParameterName = "@idParam";
+            idParameter.DbType = DbType.Int32;
+            idParameter.Value = Id;
+            command.Parameters.Add(idParameter);
+
+            if (transaction.Connection.State != ConnectionState.Open) {
+                transaction.Connection.Open();
             }
 
             using (SqlDataReader reader = command.ExecuteReader()) {
@@ -54,39 +67,53 @@ internal class Demo1DAO {
 
                 return result;
             }
+
+        } catch (Exception ex) {
+            transaction.Rollback();
+            throw;
         }
     }
 
+
+
     public void Update(Demo1DTO dto) {
+        this.Update(dto, DatabaseConnectionService.GetConnection().BeginTransaction(), true);
+    }
 
-        if (dto.Id < 1) {
-            throw new Exception($"Integer id value of DTO is invalid; must be > 0. Value found: [{dto.Id}].");
-        }
+    public void Update(Demo1DTO dto, SqlTransaction transaction) {
+        this.Update(dto, transaction, false);
+    }
 
-        SqlCommand command = DatabaseConnectionService.GetConnection().CreateCommand();
-        command.CommandText = String.Format(updateQuery, tableName);
+    public void Update(Demo1DTO dto, SqlTransaction transaction, bool doCommit) {
 
-        SqlParameter nameParameter = command.CreateParameter();
-        nameParameter.ParameterName = "@nameParam";
-        nameParameter.DbType = DbType.String;
-        nameParameter.Value = dto.Name;
-        command.Parameters.Add(nameParameter);
+        try {
+            if (dto.Id < 1) {
+                throw new Exception($"Integer id value of DTO is invalid; must be > 0. Value found: [{dto.Id}].");
+            }
 
-        SqlParameter descriptionParameter = command.CreateParameter();
-        descriptionParameter.ParameterName = "@descParam";
-        descriptionParameter.DbType = DbType.String;
-        descriptionParameter.Value = dto.Description;
-        command.Parameters.Add(descriptionParameter);
+            SqlCommand command = transaction.Connection.CreateCommand();
+            command.CommandText = String.Format(updateQuery, tableName);
 
-        SqlParameter idParameter = command.CreateParameter();
-        idParameter.ParameterName = "@idParam";
-        idParameter.DbType = DbType.Int32;
-        idParameter.Value = dto.Id;
-        command.Parameters.Add(idParameter);
+            SqlParameter nameParameter = command.CreateParameter();
+            nameParameter.ParameterName = "@nameParam";
+            nameParameter.DbType = DbType.String;
+            nameParameter.Value = dto.Name;
+            command.Parameters.Add(nameParameter);
 
-        using (DatabaseConnectionService.GetConnection()) {
-            if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
-                DatabaseConnectionService.GetConnection().Open();
+            SqlParameter descriptionParameter = command.CreateParameter();
+            descriptionParameter.ParameterName = "@descParam";
+            descriptionParameter.DbType = DbType.String;
+            descriptionParameter.Value = dto.Description;
+            command.Parameters.Add(descriptionParameter);
+
+            SqlParameter idParameter = command.CreateParameter();
+            idParameter.ParameterName = "@idParam";
+            idParameter.DbType = DbType.Int32;
+            idParameter.Value = dto.Id;
+            command.Parameters.Add(idParameter);
+
+            if (transaction.Connection.State != ConnectionState.Open) {
+                transaction.Connection.Open();
             }
 
             int rowsAffected = command.ExecuteNonQuery();
@@ -99,54 +126,95 @@ internal class Demo1DAO {
 
             Debug.WriteLine($"({rowsAffected}) rows affected!");
 
+            if (doCommit) {
+                transaction.Commit();
+            }
+
+
+        } catch (Exception ex) {
+            transaction.Rollback();
+            throw;
         }
+
     }
 
+
+
+    #region Insert Methods
+
     public void Insert(Demo1DTO dto) {
-        if (dto.Id != 0) {
-            throw new Exception("Cannot insert DTO with Id value already set.");
-        }
+        this.Insert(dto, DatabaseConnectionService.GetConnection().BeginTransaction(), false);
+    }
 
+    public void Insert(Demo1DTO dto, SqlTransaction transaction) {
+        this.Insert(dto, transaction, false);
+    }
 
-        SqlCommand command = DatabaseConnectionService.GetConnection().CreateCommand();
-        command.CommandText = String.Format(insertQuery, tableName);
+    public void Insert(Demo1DTO dto, SqlTransaction transaction, bool doCommit) {
+        try {
+            if (dto.Id != 0) {
+                throw new Exception("Cannot insert DTO with Id value already set.");
+            }
 
-        SqlParameter nameParameter = command.CreateParameter();
-        nameParameter.ParameterName = "@nameParam";
-        nameParameter.DbType = DbType.String;
-        nameParameter.Value = dto.Name;
-        command.Parameters.Add(nameParameter);
+            SqlCommand command = transaction.Connection.CreateCommand();
+            command.CommandText = String.Format(insertQuery, tableName);
+            command.Transaction = transaction;
 
-        SqlParameter descriptionParameter = command.CreateParameter();
-        descriptionParameter.ParameterName = "@descParam";
-        descriptionParameter.DbType = DbType.String;
-        descriptionParameter.Value = dto.Description;
-        command.Parameters.Add(descriptionParameter);
+            SqlParameter nameParameter = command.CreateParameter();
+            nameParameter.ParameterName = "@nameParam";
+            nameParameter.DbType = DbType.String;
+            nameParameter.Value = dto.Name;
+            command.Parameters.Add(nameParameter);
 
-        using (DatabaseConnectionService.GetConnection()) {
-            if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
-                DatabaseConnectionService.GetConnection().Open();
+            SqlParameter descriptionParameter = command.CreateParameter();
+            descriptionParameter.ParameterName = "@descParam";
+            descriptionParameter.DbType = DbType.String;
+            descriptionParameter.Value = dto.Description;
+            command.Parameters.Add(descriptionParameter);
+
+            if (transaction.Connection.State != ConnectionState.Open) {
+                transaction.Connection.Open();
             }
 
             dto.Id = (int) command.ExecuteScalar();
 
+            if (doCommit) {
+                transaction.Commit();
+            }
+
+        } catch (Exception ex) {
+            transaction.Rollback();
+            throw;
         }
     }
 
+    #endregion
+
+
+    #region Insert Many Methods
+
     public void InsertMany(List<Demo1DTO> list) {
+        this.InsertMany(list, DatabaseConnectionService.GetConnection().BeginTransaction(), true);
+    }
 
+    public void InsertMany(List<Demo1DTO> list, SqlTransaction transaction) {
+        this.InsertMany(list, transaction, false);
+    }
 
-        SqlCommand command = DatabaseConnectionService.GetConnection().CreateCommand();
-        command.CommandText = String.Format(insertQuery, tableName);
+    public void InsertMany(List<Demo1DTO> list, SqlTransaction transaction, bool doCommit) {
 
+        try {
 
-        using (DatabaseConnectionService.GetConnection()) {
-            if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
-                DatabaseConnectionService.GetConnection().Open();
+            SqlCommand command = transaction.Connection.CreateCommand();
+            command.CommandText = String.Format(insertQuery, tableName);
+            command.Transaction = transaction;
+
+            if (transaction.Connection.State != ConnectionState.Open) {
+                transaction.Connection.Open();
             }
 
             int maxTextLength = 0;
-            foreach(Demo1DTO objet in list) {
+            foreach (Demo1DTO objet in list) {
                 if (objet.Description is not null) {
                     if (objet.Description.Length > maxTextLength) {
                         maxTextLength = objet.Description.Length;
@@ -169,32 +237,57 @@ internal class Demo1DAO {
             command.Prepare();
 
             foreach (Demo1DTO dto in list) {
+                if (dto.Id != 0) {
+                    throw new Exception("Cannot insert DTO with Id value already set.");
+                }
                 command.Parameters[nameParameter.ParameterName].Value = dto.Name;
                 command.Parameters[descriptionParameter.ParameterName].Value = dto.Description;
                 dto.Id = (int) command.ExecuteScalar();
             }
 
+            if (doCommit) {
+                transaction.Commit();
+            }
+
+        } catch (Exception ex) {
+            transaction.Rollback();
+            throw;
         }
+
     }
 
+    #endregion
+
+
+    #region Delete Methods
+
     public void Delete(Demo1DTO dto) {
-        if (dto.Id < 1) {
-            throw new Exception("Cannot delete DTO with no Id value set.");
-        }
+        this.Delete(dto, DatabaseConnectionService.GetConnection().BeginTransaction(), true);
+    }
 
+    public void Delete(Demo1DTO dto, SqlTransaction transaction) {
+        this.Delete(dto, transaction, false);
+    }
 
-        SqlCommand command = DatabaseConnectionService.GetConnection().CreateCommand();
-        command.CommandText = String.Format(deleteQuery, tableName);
+    public void Delete(Demo1DTO dto, SqlTransaction transaction, bool doCommit) {
 
-        SqlParameter idParameter = command.CreateParameter();
-        idParameter.ParameterName = "@idParam";
-        idParameter.DbType = DbType.Int32;
-        idParameter.Value = dto.Id;
-        command.Parameters.Add(idParameter);
+        try {
+            if (dto.Id < 1) {
+                throw new Exception("Cannot delete DTO with no Id value set.");
+            }
 
-        using (DatabaseConnectionService.GetConnection()) {
-            if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
-                DatabaseConnectionService.GetConnection().Open();
+            SqlCommand command = transaction.Connection.CreateCommand();
+            command.CommandText = String.Format(deleteQuery, tableName);
+            command.Transaction = transaction;
+
+            SqlParameter idParameter = command.CreateParameter();
+            idParameter.ParameterName = "@idParam";
+            idParameter.DbType = DbType.Int32;
+            idParameter.Value = dto.Id;
+            command.Parameters.Add(idParameter);
+
+            if (transaction.Connection.State != ConnectionState.Open) {
+                transaction.Connection.Open();
             }
 
             int rowsAffected = command.ExecuteNonQuery();
@@ -207,6 +300,17 @@ internal class Demo1DAO {
 
             Debug.WriteLine($"({rowsAffected}) rows affected!");
 
+            if (doCommit) {
+                transaction.Commit();
+            }
+
+        } catch (Exception ex) {
+            transaction.Rollback();
+            throw;
         }
+
     }
+
+    #endregion
+
 }
