@@ -25,7 +25,7 @@ internal class Demo1DAO {
         idParameter.ParameterName = "@idParam";
         idParameter.DbType = DbType.Int32;
         idParameter.Value = Id;
-        command.Parameters.Add(idParameter);
+        _ = command.Parameters.Add(idParameter);
 
         using (DatabaseConnectionService.GetConnection()) {
             if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
@@ -48,11 +48,9 @@ internal class Demo1DAO {
 
                 }
 
-                if (reader.Read()) {
-                    throw new Exception("Someone messed up bad the database. He pays the donuts.");
-                }
-
-                return result;
+                return reader.Read() 
+                    ? throw new Exception("Someone messed up bad the database. He pays the donuts.") 
+                    : result;
             }
         }
     }
@@ -70,19 +68,19 @@ internal class Demo1DAO {
         nameParameter.ParameterName = "@nameParam";
         nameParameter.DbType = DbType.String;
         nameParameter.Value = dto.Name;
-        command.Parameters.Add(nameParameter);
+        _ = command.Parameters.Add(nameParameter);
 
         SqlParameter descriptionParameter = command.CreateParameter();
         descriptionParameter.ParameterName = "@descParam";
         descriptionParameter.DbType = DbType.String;
         descriptionParameter.Value = dto.Description;
-        command.Parameters.Add(descriptionParameter);
+        _ = command.Parameters.Add(descriptionParameter);
 
         SqlParameter idParameter = command.CreateParameter();
         idParameter.ParameterName = "@idParam";
         idParameter.DbType = DbType.Int32;
         idParameter.Value = dto.Id;
-        command.Parameters.Add(idParameter);
+        _ = command.Parameters.Add(idParameter);
 
         using (DatabaseConnectionService.GetConnection()) {
             if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
@@ -115,13 +113,13 @@ internal class Demo1DAO {
         nameParameter.ParameterName = "@nameParam";
         nameParameter.DbType = DbType.String;
         nameParameter.Value = dto.Name;
-        command.Parameters.Add(nameParameter);
+        _ = command.Parameters.Add(nameParameter);
 
         SqlParameter descriptionParameter = command.CreateParameter();
         descriptionParameter.ParameterName = "@descParam";
         descriptionParameter.DbType = DbType.String;
         descriptionParameter.Value = dto.Description;
-        command.Parameters.Add(descriptionParameter);
+        _ = command.Parameters.Add(descriptionParameter);
 
         using (DatabaseConnectionService.GetConnection()) {
             if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
@@ -158,13 +156,13 @@ internal class Demo1DAO {
             nameParameter.ParameterName = "@nameParam";
             nameParameter.DbType = DbType.String;
             nameParameter.Size = 64;
-            command.Parameters.Add(nameParameter);
+            _ = command.Parameters.Add(nameParameter);
 
             SqlParameter descriptionParameter = command.CreateParameter();
             descriptionParameter.ParameterName = "@descParam";
             descriptionParameter.DbType = DbType.String;
             descriptionParameter.Size = maxTextLength;
-            command.Parameters.Add(descriptionParameter);
+            _ = command.Parameters.Add(descriptionParameter);
 
             command.Prepare();
 
@@ -190,7 +188,7 @@ internal class Demo1DAO {
         idParameter.ParameterName = "@idParam";
         idParameter.DbType = DbType.Int32;
         idParameter.Value = dto.Id;
-        command.Parameters.Add(idParameter);
+        _ = command.Parameters.Add(idParameter);
 
         using (DatabaseConnectionService.GetConnection()) {
             if (DatabaseConnectionService.GetConnection().State != ConnectionState.Open) {
