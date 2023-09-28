@@ -1,7 +1,3 @@
-using Microsoft.Data.SqlClient;
-using System.Diagnostics;
-using TestPatates.DataAccess;
-
 namespace TestPatates;
 
 internal static class Program {

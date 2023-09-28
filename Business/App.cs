@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TestPatates.DataAccess;
 
 namespace TestPatates.Business;
@@ -24,7 +19,7 @@ public class App {
         // objet de fenêtre 'MainMenu'. Notez le passage de 'this' en argument
         // qui va permettre à la fenêtre d'accéder aux méthodes de l'instance de App
         this.mainMenu = new MainMenu(this);
-        this.demo1Service = new Demo1Service(dataSet);
+        this.demo1Service = new Demo1Service(this.dataSet);
     }
 
     public void Start() {

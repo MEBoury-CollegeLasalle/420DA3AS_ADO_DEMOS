@@ -1,11 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TestPatates.DataAccess;
 internal class Demo1DAO {
@@ -15,16 +9,16 @@ internal class Demo1DAO {
 
     private static readonly string TABLE_NAME = "Demo1";
 
-    private static readonly string SELECT_QUERY = 
+    private static readonly string SELECT_QUERY =
         $"SELECT * FROM {TABLE_NAME};";
 
-    private static readonly string INSERT_QUERY = 
+    private static readonly string INSERT_QUERY =
         $"INSERT INTO {TABLE_NAME} " +
         $"(Name, Description) " +
         $"VALUES (@nameParam, @descParam); " +
         $"SELECT * FROM {TABLE_NAME} WHERE Id = SCOPE_IDENTITY();";
 
-    private static readonly string UPDATE_QUERY = 
+    private static readonly string UPDATE_QUERY =
         $"UPDATE {TABLE_NAME} " +
         $"SET Name = @nameParam, " +
         $"Description = @descParam " +
@@ -34,11 +28,11 @@ internal class Demo1DAO {
         $"AND Description LIKE @oldDescParam" + // NOTE: comparer deux colonnes 'TEXT' ne marche pas avec '='
         $");";
 
-    private static readonly string DELETE_QUERY = 
+    private static readonly string DELETE_QUERY =
         $"DELETE FROM {TABLE_NAME} WHERE Id = @idParam;";
 
 
-    public Demo1DAO(DataSet dataSet) { 
+    public Demo1DAO(DataSet dataSet) {
         this.connection = DatabaseConnectionService.GetConnection();
         this.dataSet = dataSet;
         this.adapter = this.CreateDataAdapter();

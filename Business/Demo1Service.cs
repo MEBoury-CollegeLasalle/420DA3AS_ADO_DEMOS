@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data;
 using TestPatates.DataAccess;
 using TestPatates.Presentation;
 
@@ -58,7 +53,7 @@ internal class Demo1Service {
 
             // si oui, vérifier si l'utilisateur veux les annuler (continuer)
             DialogResult dialogResult = MessageBox.Show("Des changements ont été apportés à la table et seront annulés si vous continuez. Voulez-vous vraiment continuer?", "Attention!", MessageBoxButtons.YesNo);
-            
+
             if (dialogResult != DialogResult.Yes) {
                 // Si l'utilisateur ne veut pas continuer, retourner FAUX
                 return false;
