@@ -24,7 +24,7 @@ internal partial class Demo1Window : Form {
         if (this.demo1Service.CheckChangesBeforeClosing()) {
             // si fermeture de la fenêtre est OK (pas de changements non-sauvegardés ou
             // si utilisateur est prêt à les annuler), fermer la fenêtre.
-            this.Close();
+            this.Hide();
         }
     }
 }

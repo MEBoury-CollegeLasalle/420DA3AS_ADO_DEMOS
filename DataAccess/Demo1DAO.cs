@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Diagnostics;
 
 namespace TestPatates.DataAccess;
 internal class Demo1DAO {
@@ -37,8 +38,6 @@ internal class Demo1DAO {
         this.dataSet = dataSet;
         this.adapter = this.CreateDataAdapter();
     }
-
-
 
     private SqlDataAdapter CreateDataAdapter() {
         // Création de l'adapter
@@ -120,6 +119,7 @@ internal class Demo1DAO {
         // configuration de la table pour le gridview
         DataTable table = this.dataSet.Tables[TABLE_NAME] ?? throw new Exception("DataTable not found even after load.");
 
+
         // colonne ID est readonly et auto-increment
         DataColumn idColumn = table.Columns["Id"] ?? throw new Exception("Id DataColumn not found.");
         idColumn.AutoIncrement = true;
@@ -138,6 +138,7 @@ internal class Demo1DAO {
         DataColumn dateCreatedColumn = table.Columns["DateCreated"] ?? throw new Exception("DateCreated DataColumn not found.");
         dateCreatedColumn.AllowDBNull = true;
         dateCreatedColumn.ReadOnly = true;
+
     }
 
     public void SaveChanges() {

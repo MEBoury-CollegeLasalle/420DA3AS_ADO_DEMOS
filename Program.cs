@@ -1,3 +1,5 @@
+using TestPatates.Business;
+
 namespace TestPatates;
 
 internal static class Program {
@@ -6,7 +8,7 @@ internal static class Program {
     /// </summary>
     [STAThread]
     static void Main() {
-        new TestPatates.Business.App().Start();
+        new App().Start();
 
     }
 }
